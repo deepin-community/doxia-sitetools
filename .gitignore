@@ -1,1 +1,15 @@
-.pc/
+*.iml
+*.ipr
+target
+*.iws
+.classpath
+dependency-reduced-pom.xml
+build
+.classpath
+.project
+.settings
+.idea
+.surefire-*
+.DS_Store
+.checkstyle
+*.versionsBackup

@@ -38,7 +38,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author <a href="mailto:henning@apache.org">Henning P. Schmiedehausen</a>
- * @version $Id: DefaultDecorationModelInheritanceAssembler.java 1736757 2016-03-27 15:11:59Z hboutemy $
  */
 @Component( role = DecorationModelInheritanceAssembler.class )
 public class DefaultDecorationModelInheritanceAssembler
@@ -77,6 +76,11 @@ public class DefaultDecorationModelInheritanceAssembler
         if ( child.isDefaultVersion() && parent.getVersion() != null )
         {
             child.setVersion( parent.getVersion().clone() );
+        }
+
+        if ( child.getEdit() == null && parent.getEdit() != null )
+        {
+            child.setEdit( parent.getEdit() );
         }
 
         if ( child.getSkin() == null && parent.getSkin() != null )
@@ -414,7 +418,7 @@ public class DefaultDecorationModelInheritanceAssembler
          * @param oldPath the old path.
          * @param newPath the new path.
          */
-        public URLRebaser( final String oldPath, final String newPath )
+        URLRebaser( final String oldPath, final String newPath )
         {
             this.oldPath = oldPath;
             this.newPath = newPath;

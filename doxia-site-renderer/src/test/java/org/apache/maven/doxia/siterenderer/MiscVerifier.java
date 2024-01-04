@@ -19,11 +19,11 @@ package org.apache.maven.doxia.siterenderer;
  * under the License.
  */
 
-import com.gargoylesoftware.htmlunit.html.HtmlApplet;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlParameter;
+import com.gargoylesoftware.htmlunit.html.HtmlUnknownElement;
 
 import java.util.Iterator;
 
@@ -31,7 +31,6 @@ import java.util.Iterator;
 /**
  *
  * @author ltheussl
- * @version $Id: MiscVerifier.java 1195521 2011-10-31 15:29:36Z hboutemy $
  */
 public class MiscVerifier
     extends AbstractVerifier
@@ -54,7 +53,7 @@ public class MiscVerifier
         //
         // ----------------------------------------------------------------------
 
-        HtmlApplet applet = (HtmlApplet) elementIterator.next();
+        HtmlUnknownElement applet = (HtmlUnknownElement) elementIterator.next();
         assertEquals( "org.micro.applet.Main", applet.getAttribute( "code" ) );
         assertEquals( "micro-applet.jar", applet.getAttribute( "archive" ) );
 

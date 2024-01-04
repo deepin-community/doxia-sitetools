@@ -32,7 +32,6 @@ import org.codehaus.plexus.util.StringUtils;
  *
  * @author <a href="mailto:henning@apache.org">Henning P. Schmiedehausen</a>
  * @deprecated use {@link URIPathDescriptor} instead.
- * @version $Id: PathDescriptor.java 1606231 2014-06-27 21:05:44Z hboutemy $
  */
 
 public class PathDescriptor

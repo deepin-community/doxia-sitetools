@@ -25,13 +25,13 @@ under the License.
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>30</version>
-    <relativePath>../../pom/maven/pom.xml</relativePath>
+    <version>34</version>
+    <relativePath />
   </parent>
 
   <groupId>org.apache.maven.doxia</groupId>
   <artifactId>doxia-sitetools</artifactId>
-  <version>1.7.5</version>
+  <version>1.11.1</version>
   <packaging>pom</packaging>
 
   <name>Doxia Sitetools</name>
@@ -48,9 +48,10 @@ under the License.
   </modules>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/doxia/doxia-sitetools/tags/doxia-sitetools-1.7.5</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/doxia/doxia-sitetools/tags/doxia-sitetools-1.7.5</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/doxia/doxia-sitetools/tags/doxia-sitetools-1.7.5</url>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-doxia-sitetools.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-doxia-sitetools.git</developerConnection>
+    <url>https://github.com/apache/maven-doxia-sitetools/tree/${project.scm.tag}</url>
+    <tag>doxia-sitetools-1.11.1</tag>
   </scm>
   <issueManagement>
     <system>jira</system>
@@ -58,18 +59,19 @@ under the License.
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
-    <url>https://builds.apache.org/job/doxia-sitetools/</url>
+    <url>https://ci-builds.apache.org/job/Maven/job/maven-box/job/doxia-sitetools/</url>
   </ciManagement>
   <distributionManagement>
     <site>
       <id>apache.website</id>
-      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven-doxia/content/${maven.site.path}</url>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/doxia/website/components/${maven.site.path}</url>
     </site>
   </distributionManagement>
 
   <properties>
-    <doxiaVersion>1.7</doxiaVersion>
+    <doxiaVersion>1.11.1</doxiaVersion>
     <maven.site.path>doxia-sitetools-archives/doxia-sitetools-LATEST</maven.site.path>
+    <project.build.outputTimestamp>2021-12-12T17:08:08Z</project.build.outputTimestamp>
   </properties>
 
   <dependencyManagement>
@@ -127,6 +129,11 @@ under the License.
       </dependency>
       <dependency>
         <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-module-xhtml5</artifactId>
+        <version>${doxiaVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
         <artifactId>doxia-decoration-model</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -134,6 +141,12 @@ under the License.
         <groupId>org.apache.maven.doxia</groupId>
         <artifactId>doxia-skin-model</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <!-- Commons -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.6</version>
       </dependency>
       <!-- Plexus -->
       <dependency>
@@ -144,7 +157,7 @@ under the License.
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-i18n</artifactId>
-        <version>1.0-beta-7</version>
+        <version>1.0-beta-10</version>
         <exclusions>
           <exclusion>
             <groupId>org.codehaus.plexus</groupId>
@@ -154,14 +167,25 @@ under the License.
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-velocity</artifactId>
+        <version>1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>3.0.22</version>
+        <version>3.3.0</version>
+      </dependency>
+      <!-- misc -->
+      <dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity</artifactId>
+        <version>1.7</version>
       </dependency>
       <!-- Test -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>3.8.2</version>
+        <version>4.13.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -180,27 +204,19 @@ under the License.
     </resources>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <configuration>
-            <tagBase>https://svn.apache.org/repos/asf/maven/doxia/doxia-sitetools/tags</tagBase>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-          </configuration>
-        </plugin>
         <!-- TODO need to upgrade to last version or Maven parent version -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>clirr-maven-plugin</artifactId>
           <configuration>
-            <comparisonVersion>1.1</comparisonVersion>
+            <comparisonVersion>1.9</comparisonVersion>
           </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <configuration>
-            <topSiteURL>scm:svn:https://svn.apache.org/repos/infra/websites/production/maven-doxia/content/${maven.site.path}</topSiteURL>
+            <topSiteURL>scm:svn:https://svn.apache.org/repos/asf/maven/doxia/website/components/${maven.site.path}</topSiteURL>
           </configuration>
         </plugin>
         <plugin>
@@ -225,9 +241,14 @@ under the License.
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-component-metadata</artifactId>
-          <version>1.7.1</version>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.1.2</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -254,47 +275,10 @@ under the License.
             </goals>
             <configuration>
               <excludes>
-                <exclude>org/apache/maven/doxia/site/decoration/*</exclude>
-                <exclude>org/apache/maven/doxia/site/decoration/inheritance/*URLContainer</exclude>
-                <!-- DOXIASITETOOLS-85 RenderingContext package changed -->
-                <exclude>org/apache/maven/doxia/siterenderer/*Renderer</exclude>
-                <exclude>org/apache/maven/doxia/siterenderer/sink/*</exclude>
-                <!-- DOXIA-511 -->
-                <exclude>org/apache/maven/doxia/docrenderer/AbstractDocumentRenderer</exclude>
-                <exclude>org/apache/maven/doxia/docrenderer/itext/AbstractITextRender</exclude>
-                <!-- DOXIASITETOOLS-170 -->
-                <exlcude>org/apache/maven/doxia/siterenderer/SiteRenderingContext</exlcude>
               </excludes>
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce-bytecode-version</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <enforceBytecodeVersion>
-                  <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
-                </enforceBytecodeVersion>
-              </rules>
-              <fail>true</fail>
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.0-beta-6</version>
-            <scope>compile</scope>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -307,7 +291,7 @@ under the License.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-changes-plugin</artifactId>
-            <version>2.6</version>
+            <version>2.12.1</version>
             <inherited>false</inherited>
             <configuration>
               <columnNames>Type,Key,Summary,Resolution,Assignee</columnNames>
@@ -385,15 +369,6 @@ under the License.
           </plugin>
         </plugins>
       </reporting>
-    </profile>
-    <profile>
-      <id>jigsaw</id>
-      <activation>
-        <jdk>[1.9,)</jdk>
-      </activation>
-      <properties>
-        <clirr.skip>true</clirr.skip>
-      </properties>
     </profile>
   </profiles>
 </project>

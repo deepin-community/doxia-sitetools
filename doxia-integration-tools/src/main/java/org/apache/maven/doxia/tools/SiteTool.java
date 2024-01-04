@@ -35,7 +35,6 @@ import org.apache.maven.reporting.MavenReport;
  * like <code>DecorationModel</code>.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: SiteTool.java 1725099 2016-01-17 16:17:34Z hboutemy $
  */
 public interface SiteTool
 {
@@ -90,7 +89,7 @@ public interface SiteTool
     /**
      * Interpolating several expressions in the site descriptor content. Actually, the expressions can be in
      * the project, the environment variables and the specific properties like <code>encoding</code>.
-     * <p/>
+     * <p>
      * For instance:
      * <dl>
      * <dt>${project.name}</dt>

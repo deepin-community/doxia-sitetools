@@ -19,35 +19,48 @@ package org.apache.maven.doxia.siterenderer;
  * under the License.
  */
 
+import java.util.List;
+
 /**
- * <p>RendererException class.</p>
+ * Document content, that will be merged into a site template.
  *
- * @author Emmanuel Venisse
+ * @since 1.8
  */
-public class RendererException
-    extends Exception
+public interface DocumentContent
 {
-
-    private static final long serialVersionUID = 3141592653589793238L;
+    /**
+     * Get the title of the document.
+     * @return the document title
+     */
+    String getTitle();
 
     /**
-     * Construct a RendererException with a message.
-     *
-     * @param message a custom message.
+     * Get the date of the document.
+     * @return the document date
      */
-    public RendererException( String message )
-    {
-        super( message );
-    }
+    String getDate();
 
     /**
-     * Construct a RendererException with a message and a cause.
-     *
-     * @param message a custom message.
-     * @param t the cause.
+     * Get the authors of the document.
+     * @return the document authors
      */
-    public RendererException( String message, Throwable t )
-    {
-        super( message, t );
-    }
+    List<String> getAuthors();
+
+    /**
+     * Get the html head of the document.
+     * @return the document html head
+     */
+    String getHead();
+
+    /**
+     * Get the html body of the document.
+     * @return the document body head
+     */
+    String getBody();
+
+    /**
+     * Get the document rendering context.
+     * @return the document rendering context
+     */
+    RenderingContext getRenderingContext();
 }

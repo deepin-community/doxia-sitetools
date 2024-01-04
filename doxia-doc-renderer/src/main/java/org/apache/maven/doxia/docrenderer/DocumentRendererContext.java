@@ -28,9 +28,9 @@ import org.codehaus.plexus.util.ReaderFactory;
  * Context when processing Velocity files using a {@link java.util.HashMap} for data storage.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: DocumentRendererContext.java 1185508 2011-10-18 06:58:50Z ltheussl $
  * @since 1.1.2
  */
+@Deprecated
 public class DocumentRendererContext
 {
     private String inputEncoding = ReaderFactory.UTF_8;

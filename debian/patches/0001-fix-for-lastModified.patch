@@ -9,7 +9,7 @@ Subject: fix for lastModified
 
 --- a/doxia-site-renderer/src/main/java/org/apache/maven/doxia/siterenderer/DefaultSiteRenderer.java
 +++ b/doxia-site-renderer/src/main/java/org/apache/maven/doxia/siterenderer/DefaultSiteRenderer.java
-@@ -312,8 +312,7 @@
+@@ -323,8 +323,7 @@
  
              File inputFile = new File( renderingContext.getBasedir(), renderingContext.getInputName() );
  

@@ -30,9 +30,9 @@ import org.apache.maven.doxia.document.DocumentModel;
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @author ltheussl
- * @version $Id: DocumentRenderer.java 1670514 2015-03-31 23:10:01Z hboutemy $
  * @since 1.1
  */
+@Deprecated
 public interface DocumentRenderer
 {
     /** Plexus lookup role. */
@@ -66,7 +66,6 @@ public interface DocumentRenderer
      *              If the model is null, render all files from baseDirectory individually.
      * @throws org.apache.maven.doxia.docrenderer.DocumentRendererException if any
      * @throws java.io.IOException if any
-//     * @deprecated since 1.1.2, use {@link #render(File, File, DocumentModel, DocumentRendererContext)}
      */
     void render( File baseDirectory, File outputDirectory, DocumentModel documentModel )
         throws DocumentRendererException, IOException;
