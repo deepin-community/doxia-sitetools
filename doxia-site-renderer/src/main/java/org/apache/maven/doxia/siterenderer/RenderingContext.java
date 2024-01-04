@@ -28,14 +28,16 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * The rendering context of a document.
+ * If not rendered from a Doxia markup source, parserId and extension will be null.
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
- * @version $Id: RenderingContext.java 1720929 2015-12-19 14:09:41Z hboutemy $
  * @since 1.5 (was since 1.1 in o.a.m.d.sink.render)
  */
-public class RenderingContext
+public class RenderingContext // TODO rename to DocumentRenderingContext
 {
     private final File basedir;
+
+    private final String basedirRelativePath;
 
     private final String inputName;
 
@@ -49,45 +51,80 @@ public class RenderingContext
 
     private Map<String, String> attributes;
 
+    private final boolean editable;
+
+    private final String generator;
+
+    @Deprecated
+    public RenderingContext( File basedir, String document )
+    {
+        this( basedir, null, document, null, null, false, null );
+    }
+
     /**
      * <p>
-     * Constructor for RenderingContext when document is not rendered from a Doxia source.
+     * Constructor for RenderingContext when document is not rendered from a Doxia markup source.
      * </p>
      *
      * @param basedir the pseudo-source base directory.
      * @param document the pseudo-source document name: will be used to compute output name (same name with extension
      *            replaced with <code>.html</code>).
+     * @param generator the generator (in general a reporting goal: <code>groupId:artifactId:version:goal</code>)
+     * @since 1.8
      */
-    public RenderingContext( File basedir, String document )
+    public RenderingContext( File basedir, String document, String generator )
     {
-        this( basedir, document, null, null );
+        this( basedir, null, document, null, null, false, generator );
+    }
+
+    @Deprecated
+    public RenderingContext( File basedir, String document, String parserId, String extension )
+    {
+        this( basedir, null, document, parserId, extension, false, null );
+    }
+
+    public RenderingContext( File basedir, String basedirRelativePath, String document, String parserId,
+                             String extension, boolean editable )
+    {
+        this( basedir, basedirRelativePath, document, parserId, extension, editable, null );
     }
 
     /**
      * <p>
-     * Constructor for RenderingContext.
+     * Constructor for document RenderingContext.
      * </p>
      *
-     * @param basedir the source base directory.
+     * @param basedir the source base directory (not null, pseudo value when not a Doxia source).
+     * @param basedirRelativePath the relative path from root (null if not Doxia source)
      * @param document the source document name.
      * @param parserId the Doxia module parser id associated to this document, may be null if document not rendered from
      *            a Doxia source.
-     * @param extension the source document filename extension.
+     * @param extension the source document filename extension, may be null if document not rendered from
+     *            a Doxia source.
+     * @param editable is the document editable as source, i.e. not generated?
+     * @param generator the generator (in general a reporting goal: <code>groupId:artifactId:version:goal</code>)
+     * @since 1.8
      */
-    public RenderingContext( File basedir, String document, String parserId, String extension )
+    public RenderingContext( File basedir, String basedirRelativePath, String document, String parserId,
+                             String extension, boolean editable, String generator )
     {
         this.basedir = basedir;
-        this.extension = extension;
+        this.basedirRelativePath = basedirRelativePath;
         this.inputName = document;
         this.parserId = parserId;
+        this.extension = extension;
+        this.generator = generator;
         this.attributes = new HashMap<String, String>();
 
         if ( StringUtils.isNotEmpty( extension ) )
         {
-            // here we now the parserId we can play with this
-            // index.xml -> index.html
-            // index.xml.vm -> index.html
-            // download.apt.vm --> download.html
+            // document comes from a Doxia source: see DoxiaDocumentRenderer
+            this.editable = editable;
+
+            // here we know the parserId and extension, we can play with this to get output name from document:
+            // - index.xml -> index.html
+            // - index.xml.vm -> index.html
+            // - download.apt.vm --> download.html
             if ( DefaultSiteRenderer.endsWithIgnoreCase( document, ".vm" ) )
             {
                 document = document.substring( 0, document.length() - 3 );
@@ -97,8 +134,12 @@ public class RenderingContext
         }
         else
         {
+            // document does not come from a Doxia source but direct Sink API
+            this.editable = false;
+            // make sure output name ends in .html
             this.outputName = document.substring( 0, document.lastIndexOf( '.' ) ).replace( '\\', '/' ) + ".html";
         }
+
         this.relativePath = PathTool.getRelativePath( basedir.getPath(), new File( basedir, inputName ).getPath() );
     }
 
@@ -123,9 +164,10 @@ public class RenderingContext
     }
 
     /**
-     * <p>Getter for the field <code>outputName</code>.</p>
+     * Get html output name, relative to site root.
      *
-     * @return a {@link java.lang.String} object.
+     * @return html output name
+     * @see PathTool#getRelativePath(String)
      */
     public String getOutputName()
     {
@@ -133,9 +175,9 @@ public class RenderingContext
     }
 
     /**
-     * <p>Getter for the field <code>parserId</code>.</p>
+     * Get the parserId when document comes from a Doxia source.
      *
-     * @return a {@link java.lang.String} object.
+     * @return parser id, or <code>null</code> if not froma DOxia source.
      */
     public String getParserId()
     {
@@ -143,9 +185,9 @@ public class RenderingContext
     }
 
     /**
-     * <p>Getter for the field <code>relativePath</code>.</p>
+     * Get the relative path to site root.
      *
-     * @return a {@link java.lang.String} object.
+     * @return the relative path to site root
      */
     public String getRelativePath()
     {
@@ -175,12 +217,79 @@ public class RenderingContext
     }
 
     /**
-     * <p>Getter for the field <code>extension</code>.</p>
+     * Get the source document filename extension (when a Doxia source)
      *
-     * @return a {@link java.lang.String} object.
+     * @return the source document filename extension when a Doxia source, or <code>null</code> if not a Doxia source
      */
     public String getExtension()
     {
         return extension;
+    }
+
+    /**
+     * Is the source document editable?
+     *
+     * @return <code>true</code> if comes from an editable Doxia source (not generated one).
+     * @since 1.8
+     */
+    public boolean isEditable()
+    {
+        return editable;
+    }
+
+    /**
+     * Is the document rendered from a Doxia source?
+     *
+     * @return <code>true</code> if comes from a Doxia source.
+     * @since 1.8
+     */
+    public boolean isDoxiaSource()
+    {
+        return StringUtils.isNotEmpty( extension );
+    }
+
+    /**
+     * What is the generator (if any)?
+     *
+     * @return <code>null</code> if no known generator
+     * @since 1.8
+     */
+    public String getGenerator()
+    {
+        return generator;
+    }
+
+    /**
+     * Get the relative path of basedir (when a Doxia source)
+     *
+     * @return the relative path of basedir when a Doxia source, or <code>null</code> if not a Doxia source
+     * @since 1.8
+     */
+    public String getBasedirRelativePath()
+    {
+        return basedirRelativePath;
+    }
+
+    /**
+     * Get the relative path to Doxia source from build root.
+     *
+     * @return the relative path to Doxia source from build root, or <code>null</code> if not a Doxia source
+     * @since 1.8
+     */
+    public String getDoxiaSourcePath()
+    {
+        return isDoxiaSource() ? ( basedirRelativePath + '/' + inputName ) : null;
+    }
+
+    /**
+     * Get url of the Doxia source calculate from given base url.
+     *
+     * @param base the base url to use
+     * @return the resulting url
+     * @since 1.8
+     */
+    public String getDoxiaSourcePath( String base )
+    {
+        return PathTool.calculateLink( getDoxiaSourcePath(), base );
     }
 }

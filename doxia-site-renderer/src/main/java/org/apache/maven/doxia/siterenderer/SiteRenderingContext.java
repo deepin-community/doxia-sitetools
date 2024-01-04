@@ -37,7 +37,6 @@ import org.codehaus.plexus.util.WriterFactory;
  * Context for a site rendering.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @version $Id: SiteRenderingContext.java 1767162 2016-10-30 14:48:28Z hboutemy $
  */
 public class SiteRenderingContext
 {
@@ -64,6 +63,8 @@ public class SiteRenderingContext
     private SkinModel skinModel;
 
     private boolean usingDefaultTemplate;
+
+    private File rootDirectory;
 
     private List<File> siteDirectories = new ArrayList<File>();
 
@@ -428,6 +429,7 @@ public class SiteRenderingContext
      * Directory where to save content after Velocity processing (<code>*.vm</code>), but before parsing it with Doxia.
      * 
      * @return not null if the documents are to be saved
+     * @since 1.7
      */
     public File getProcessedContentOutput()
     {
@@ -439,9 +441,33 @@ public class SiteRenderingContext
      * Doxia?
      * 
      * @param processedContentOutput not null if the documents are to be saved
+     * @since 1.7
      */
     public void setProcessedContentOutput( File processedContentOutput )
     {
         this.processedContentOutput = processedContentOutput;
+    }
+
+    /**
+     * Root directory, to calculate relative path to every site directories.
+     * Corresponds to the <code>pom.xml</code> directory for Maven build.
+     *
+     * @return the root directory
+     * @since 1.8
+     */
+    public File getRootDirectory()
+    {
+        return rootDirectory;
+    }
+
+    /**
+     * Set the root directory.
+     *
+     * @param rootDirectory the root directory
+     * @since 1.8
+     */
+    public void setRootDirectory( File rootDirectory )
+    {
+        this.rootDirectory = rootDirectory;
     }
 }

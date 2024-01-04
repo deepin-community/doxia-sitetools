@@ -31,6 +31,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlParagraph;
 import com.gargoylesoftware.htmlunit.html.HtmlPreformattedText;
 import com.gargoylesoftware.htmlunit.html.HtmlS;
+import com.gargoylesoftware.htmlunit.html.HtmlSection;
 import com.gargoylesoftware.htmlunit.html.HtmlSubscript;
 import com.gargoylesoftware.htmlunit.html.HtmlSuperscript;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
@@ -46,7 +47,6 @@ import java.util.Iterator;
  *
  *
  * @author ltheussl
- * @version $Id: AttributesVerifier.java 1195521 2011-10-31 15:29:36Z hboutemy $
  */
 public class AttributesVerifier
     extends AbstractVerifier
@@ -69,8 +69,7 @@ public class AttributesVerifier
         //
         // ----------------------------------------------------------------------
 
-        HtmlDivision div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        HtmlSection section = (HtmlSection) elementIterator.next();
 
         HtmlHeading2 h2 = (HtmlHeading2) elementIterator.next();
         assertNotNull( h2 );
@@ -99,7 +98,7 @@ public class AttributesVerifier
         assertEquals( "Project", img.getAttribute( "alt" ) );
 
         // test object identity to distinguish the case ATTRIBUTE_VALUE_EMPTY
-        assertTrue( img.getAttribute( "dummy" ) == HtmlElement.ATTRIBUTE_NOT_DEFINED );
+        assertSame( img.getAttribute( "dummy" ), HtmlElement.ATTRIBUTE_NOT_DEFINED );
 
         HtmlTable table = (HtmlTable) elementIterator.next();
         assertEquals( "1", table.getAttribute( "border" ) );
@@ -181,7 +180,7 @@ public class AttributesVerifier
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "/index.html", a.getAttribute( "href" ) );
 
-        div = (HtmlDivision) elementIterator.next();
+        HtmlDivision div = (HtmlDivision) elementIterator.next();
         assertEquals( "source", div.getAttribute( "class" ) );
         HtmlPreformattedText pre = (HtmlPreformattedText) elementIterator.next();
         assertEquals( "pretty", pre.getAttribute( "class" ) );
@@ -192,15 +191,13 @@ public class AttributesVerifier
         pre = (HtmlPreformattedText) elementIterator.next();
         assertEquals( "pretty", pre.getAttribute( "id" ) );
 
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        section = (HtmlSection) elementIterator.next();
         h2 = (HtmlHeading2) elementIterator.next();
         assertEquals( "Section without id", h2.asText().trim() );
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "Section_without_id", a.getAttribute( "name" ) );
 
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        section = (HtmlSection) elementIterator.next();
         HtmlHeading3 h3 = (HtmlHeading3) elementIterator.next();
         assertEquals( "Subsection without id", h3.asText().trim() );
         a = (HtmlAnchor) elementIterator.next();
@@ -208,8 +205,7 @@ public class AttributesVerifier
 
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "section-id", a.getAttribute( "name" ) );
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        section = (HtmlSection) elementIterator.next();
         h2 = (HtmlHeading2) elementIterator.next();
         assertEquals( "Section with id", h2.asText().trim() );
         a = (HtmlAnchor) elementIterator.next();
@@ -217,8 +213,7 @@ public class AttributesVerifier
 
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "subsection-id", a.getAttribute( "name" ) );
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        section = (HtmlSection) elementIterator.next();
         h3 = (HtmlHeading3) elementIterator.next();
         assertEquals( "Subsection with id", h3.asText().trim() );
         a = (HtmlAnchor) elementIterator.next();
@@ -226,9 +221,9 @@ public class AttributesVerifier
 
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "foo", a.getAttribute( "name" ) );
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "bar", div.getAttribute( "class" ) );
-        assertEquals( "foo", div.getAttribute( "id" ) );
+        section = (HtmlSection) elementIterator.next();
+        assertEquals( "bar", section.getAttribute( "class" ) );
+        assertEquals( "foo", section.getAttribute( "id" ) );
         h2 = (HtmlHeading2) elementIterator.next();
         assertEquals( "Section name", h2.asText().trim() );
         assertEquals( "", h2.getAttribute( "class" ) );
@@ -237,9 +232,9 @@ public class AttributesVerifier
 
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "subfoo", a.getAttribute( "name" ) );
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "subbar", div.getAttribute( "class" ) );
-        assertEquals( "subfoo", div.getAttribute( "id" ) );
+        section = (HtmlSection) elementIterator.next();
+        assertEquals( "subbar", section.getAttribute( "class" ) );
+        assertEquals( "subfoo", section.getAttribute( "id" ) );
         h3 = (HtmlHeading3) elementIterator.next();
         assertEquals( "Subsection name", h3.asText().trim() );
         assertEquals( "", h3.getAttribute( "class" ) );

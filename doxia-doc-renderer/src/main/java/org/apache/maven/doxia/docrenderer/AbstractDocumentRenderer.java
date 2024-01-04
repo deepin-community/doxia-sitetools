@@ -67,9 +67,9 @@ import org.codehaus.plexus.velocity.VelocityComponent;
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @author ltheussl
- * @version $Id: AbstractDocumentRenderer.java 1726406 2016-01-23 15:06:45Z hboutemy $
  * @since 1.1
  */
+@Deprecated
 public abstract class AbstractDocumentRenderer
     extends AbstractLogEnabled
     implements DocumentRenderer

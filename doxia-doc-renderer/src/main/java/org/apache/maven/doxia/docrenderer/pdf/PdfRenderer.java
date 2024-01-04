@@ -28,9 +28,9 @@ import org.apache.maven.doxia.docrenderer.DocumentRendererException;
  * PDF renderer interface.
  *
  * @author ltheussl
- * @version $Id: PdfRenderer.java 1670514 2015-03-31 23:10:01Z hboutemy $
  * @since 1.1
  */
+@Deprecated
 public interface PdfRenderer
     extends DocumentRenderer
 {

@@ -29,7 +29,6 @@ import java.io.Writer;
  * a non-null parserId and extension.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @version $Id: DoxiaDocumentRenderer.java 1720924 2015-12-19 13:44:56Z hboutemy $
  */
 public class DoxiaDocumentRenderer
     implements DocumentRenderer
@@ -47,10 +46,10 @@ public class DoxiaDocumentRenderer
     }
 
     /** {@inheritDoc} */
-    public void renderDocument( Writer writer, Renderer renderer, SiteRenderingContext siteRenderingContext )
+    public void renderDocument( Writer writer, Renderer siteRenderer, SiteRenderingContext siteRenderingContext )
         throws RendererException, FileNotFoundException, UnsupportedEncodingException
     {
-        renderer.renderDocument( writer, renderingContext, siteRenderingContext );
+        siteRenderer.renderDocument( writer, renderingContext, siteRenderingContext );
     }
 
     /** {@inheritDoc} */

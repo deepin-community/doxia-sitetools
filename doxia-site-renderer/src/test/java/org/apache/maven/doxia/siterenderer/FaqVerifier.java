@@ -31,13 +31,13 @@ import com.gargoylesoftware.htmlunit.html.HtmlOrderedList;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlParagraph;
 import com.gargoylesoftware.htmlunit.html.HtmlPreformattedText;
+import com.gargoylesoftware.htmlunit.html.HtmlSection;
 
 import java.util.Iterator;
 
 /**
  *
  * @author ltheussl
- * @version $Id: FaqVerifier.java 1737482 2016-04-02 09:56:25Z hboutemy $
  */
 public class FaqVerifier
     extends AbstractVerifier
@@ -60,8 +60,7 @@ public class FaqVerifier
         //
         // ----------------------------------------------------------------------
 
-        HtmlDivision div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        HtmlSection section = (HtmlSection) elementIterator.next();
 
         HtmlHeading2 h2 = (HtmlHeading2) elementIterator.next();
         assertEquals( "Oft Asked Questions", h2.asText().trim() );
@@ -78,10 +77,10 @@ public class FaqVerifier
         assertEquals( "Contributing", element.asText().trim() );
 
         HtmlOrderedList ol = (HtmlOrderedList) elementIterator.next();
-        assertEquals( "One stupid question & a silly answer?", ol.getFirstChild().asText().trim() );
+        assertEquals( "One stupid question & a silly answer?", ol.getFirstElementChild().asText().trim() );
 
         HtmlListItem li = (HtmlListItem) elementIterator.next();
-        assertEquals( "One stupid question & a silly answer?", li.getFirstChild().asText().trim() );
+        assertEquals( "One stupid question & a silly answer?", li.getFirstElementChild().asText().trim() );
 
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "#stupid-question", a.getAttribute( "href" ) );
@@ -96,17 +95,16 @@ public class FaqVerifier
         assertEquals( "Using Maven", element.asText().trim() );
 
         ol = (HtmlOrderedList) elementIterator.next();
-        assertEquals( "How do I disable a report on my site?", ol.getFirstChild().asText().trim() );
+        assertEquals( "How do I disable a report on my site?", ol.getFirstElementChild().asText().trim() );
 
         li = (HtmlListItem) elementIterator.next();
         assertNotNull( li );
-        assertEquals( "How do I disable a report on my site?", li.getFirstChild().asText().trim() );
+        assertEquals( "How do I disable a report on my site?", li.getFirstElementChild().asText().trim() );
 
         a = (HtmlAnchor) elementIterator.next();
         assertEquals( "#disable-reports", a.getAttribute( "href" ) );
 
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        section = (HtmlSection) elementIterator.next();
 
         h2 = (HtmlHeading2) elementIterator.next();
         assertEquals( "Contributing", h2.asText().trim() );
@@ -158,8 +156,7 @@ public class FaqVerifier
         assertEquals( "[top]", a.asText().trim() );
 
 
-        div = (HtmlDivision) elementIterator.next();
-        assertEquals( "section", div.getAttribute( "class" ) );
+        section = (HtmlSection) elementIterator.next();
 
         h2 = (HtmlHeading2) elementIterator.next();
         assertEquals( "Using Maven", h2.asText().trim() );
@@ -180,10 +177,10 @@ public class FaqVerifier
         p = (HtmlParagraph) elementIterator.next();
 
         element = elementIterator.next();
-        assertEquals( "tt", element.getTagName() );
+        assertEquals( "code", element.getTagName() );
         assertEquals( "<source></source>", element.asText().trim() );
 
-        div = (HtmlDivision) elementIterator.next();
+        HtmlDivision div = (HtmlDivision) elementIterator.next();
         assertEquals( "source", div.getAttribute( "class" ) );
 
         HtmlPreformattedText pre = (HtmlPreformattedText) elementIterator.next();

@@ -18,7 +18,7 @@
 
 com.lowagie itext jar 1.4 * *
 commons-collections commons-collections jar s/3\..*/3.x/ * *
-junit junit jar s/3\..*/3.x/ * *
+junit junit jar s/4\..*/4.x/ * *
 org.codehaus.plexus plexus-component-metadata maven-plugin s/1.7.1/1.5.5/ * *
 org.codehaus.plexus plexus-container-default jar s/.*/1.5.5/ * *
 org.codehaus.plexus plexus-utils * s/.*/2.x/ * *

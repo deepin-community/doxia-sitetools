@@ -77,9 +77,9 @@ import com.lowagie.text.ElementTags;
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @author ltheussl
- * @version $Id: ITextPdfRenderer.java 1726406 2016-01-23 15:06:45Z hboutemy $
  * @since 1.1
  */
+@Deprecated
 @Component( role = PdfRenderer.class, hint = "itext" )
 public class ITextPdfRenderer
     extends AbstractPdfRenderer
@@ -612,7 +612,7 @@ public class ITextPdfRenderer
                     {
                         String doc = href + "." + extension;
                         File source = new File( moduleBasedir, doc );
-    
+
                         // Velocity file?
                         if ( !source.exists() )
                         {
@@ -626,7 +626,7 @@ public class ITextPdfRenderer
                             }
                             source = new File( moduleBasedir, doc );
                         }
-    
+
                         if ( source.exists() )
                         {
                             String outputITextName = doc.substring( 0, doc.lastIndexOf( '.' ) + 1 ) + "xml";
@@ -636,7 +636,7 @@ public class ITextPdfRenderer
                             {
                                 outputITextFileTmp.getParentFile().mkdirs();
                             }
-    
+
                             iTextFiles.add( outputITextFileTmp );
                             parse( source, module, outputITextFileTmp, context );
                         }
