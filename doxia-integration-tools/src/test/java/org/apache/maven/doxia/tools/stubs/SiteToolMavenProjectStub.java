@@ -38,7 +38,6 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: SiteToolMavenProjectStub.java 1736695 2016-03-26 14:27:37Z hboutemy $
  */
 public class SiteToolMavenProjectStub
     extends MavenProjectStub
@@ -119,7 +118,7 @@ public class SiteToolMavenProjectStub
     /** {@inheritDoc} */
     public List<ArtifactRepository> getRemoteArtifactRepositories()
     {
-        ArtifactRepository repository = new DefaultArtifactRepository( "central", "http://repo1.maven.org/maven2",
+        ArtifactRepository repository = new DefaultArtifactRepository( "central", "https://repo1.maven.org/maven2",
                                                                        new DefaultRepositoryLayout() );
 
         return Collections.singletonList( repository );

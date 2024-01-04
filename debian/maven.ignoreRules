@@ -16,7 +16,8 @@
 
 htmlunit htmlunit * * * *
 org.apache.maven maven-artifact-manager
-org.apache.maven.doxia doxia-core * * * *
+org.apache.maven.doxia doxia-core
+org.apache.maven.doxia doxia-module-markdown
 org.apache.maven.plugins maven-enforcer-plugin
 org.apache.maven.plugins maven-project-info-reports-plugin * * * *
 org.apache.maven.plugins maven-scm-publish-plugin

@@ -1,5 +1,7 @@
 package org.apache.maven.doxia.site.decoration;
 
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,11 +21,13 @@ package org.apache.maven.doxia.site.decoration;
  * under the License.
  */
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class DecorationUtilsTest
-    extends TestCase
 {
+    @Test
     public void testIsLink()
     {
         assertFalse( DecorationUtils.isLink( null ) );
@@ -35,5 +39,29 @@ public class DecorationUtilsTest
         assertTrue( DecorationUtils.isLink( "file:///home" ) );
         assertTrue( DecorationUtils.isLink( "mailto:toto@maven.org" ) );
         assertTrue( DecorationUtils.isLink( "any-protocol://" ) );
+    }
+
+    @Test
+    public void testGetCustomChild()
+    {
+        Xpp3Dom dom = new Xpp3Dom( "root" );
+        Xpp3Dom level1 = new Xpp3Dom( "level1" );
+        dom.addChild( level1 );
+        Xpp3Dom level2 = new Xpp3Dom( "level2" );
+        level2.setValue( "value" );
+        level1.addChild( level2 );
+
+        assertEquals( level1, DecorationUtils.getCustomChild( dom, "level1" ) );
+        assertEquals( level2, DecorationUtils.getCustomChild( dom, "level1.level2" ) );
+        assertNull( DecorationUtils.getCustomChild( dom, "no.level2" ) );
+        assertNull( DecorationUtils.getCustomChild( dom, "level1.no" ) );
+
+        assertEquals( "value", DecorationUtils.getCustomValue( dom, "level1.level2" ) );
+        assertNull( DecorationUtils.getCustomValue( dom, "no.level2" ) );
+        assertNull( DecorationUtils.getCustomValue( dom, "level1.no" ) );
+
+        assertEquals( "value", DecorationUtils.getCustomValue( dom, "level1.level2", "default" ) );
+        assertEquals( "default", DecorationUtils.getCustomValue( dom, "no.level2", "default" ) );
+        assertEquals( "default", DecorationUtils.getCustomValue( dom, "level1.no", "default" ) );
     }
 }

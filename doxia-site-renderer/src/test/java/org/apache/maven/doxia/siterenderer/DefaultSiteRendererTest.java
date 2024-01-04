@@ -21,9 +21,7 @@ package org.apache.maven.doxia.siterenderer;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,6 +32,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +45,10 @@ import java.util.zip.ZipEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.doxia.Doxia;
+import org.apache.maven.doxia.parser.ParseException;
+import org.apache.maven.doxia.parser.Parser;
+import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.site.decoration.DecorationModel;
 import org.apache.maven.doxia.site.decoration.io.xpp3.DecorationXpp3Reader;
 import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
@@ -53,13 +57,14 @@ import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.ReflectionUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.mockito.Mockito;
 import org.xml.sax.EntityResolver;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @author <a href="mailto:evenisse@codehaus.org">Emmanuel Venisse</a>
- * @version $Id: DefaultSiteRendererTest.java 1767162 2016-10-30 14:48:28Z hboutemy $
  */
 public class DefaultSiteRendererTest
     extends PlexusTestCase
@@ -150,6 +155,76 @@ public class DefaultSiteRendererTest
     /**
      * @throws Exception if something goes wrong.
      */
+    public void testRenderExceptionMessageWhenLineNumberIsNotAvailable()
+        throws Exception
+    {
+        final File testBasedir = getTestFile( "src/test/resources/site/xdoc" );
+        final String testDocumentName = "head.xml";
+        final String exceptionMessage = "parse error occurred";
+
+        Doxia doxiaInstance = (Doxia) lookup( Doxia.class );
+        Doxia doxiaSpy = spy( doxiaInstance );
+        Mockito.doThrow( new ParseException( exceptionMessage ) )
+                .when( doxiaSpy )
+                .parse( Mockito.<Reader>any(), Mockito.anyString(), Mockito.<Sink>any() );
+        Renderer renderer = (Renderer) lookup( Renderer.class );
+        ReflectionUtils.setVariableValueInObject( renderer, "doxia", doxiaSpy );
+
+        RenderingContext renderingContext = new RenderingContext( testBasedir, "", testDocumentName, "xdoc", "",
+                false );
+
+        try
+        {
+            renderer.renderDocument( null, renderingContext, new SiteRenderingContext() );
+            fail( "should fail with exception" );
+        }
+        catch ( RendererException e )
+        {
+            assertEquals(
+                    String.format( "Error parsing '%s%s%s': %s",
+                            testBasedir.getAbsolutePath(), File.separator, testDocumentName, exceptionMessage ),
+                    e.getMessage() );
+        }
+    }
+
+    /**
+     * @throws Exception if something goes wrong.
+     */
+    public void testRenderExceptionMessageWhenLineNumberIsAvailable()
+        throws Exception
+    {
+        final File testBasedir = getTestFile( "src/test/resources/site/xdoc" );
+        final String testDocumentName = "head.xml";
+        final String exceptionMessage = "parse error occurred";
+
+        Doxia doxiaInstance = (Doxia) lookup( Doxia.class );
+        Doxia doxiaSpy = spy( doxiaInstance );
+        Mockito.doThrow( new ParseException( exceptionMessage, 42, 36 ) )
+                .when( doxiaSpy )
+                .parse( Mockito.<Reader>any(), Mockito.anyString(), Mockito.<Sink>any() );
+        Renderer renderer = (Renderer) lookup( Renderer.class );
+        ReflectionUtils.setVariableValueInObject( renderer, "doxia", doxiaSpy );
+
+        RenderingContext renderingContext = new RenderingContext( testBasedir, "", testDocumentName, "xdoc", "",
+                false );
+
+        try
+        {
+            renderer.renderDocument( null, renderingContext, new SiteRenderingContext() );
+            fail( "should fail with exception" );
+        }
+        catch ( RendererException e )
+        {
+            assertEquals(
+                    String.format( "Error parsing '%s%s%s': line [42] %s",
+                            testBasedir.getAbsolutePath(), File.separator, testDocumentName, exceptionMessage ),
+                    e.getMessage() );
+        }
+    }
+
+    /**
+     * @throws Exception if something goes wrong.
+     */
     public void testRender()
         throws Exception
     {
@@ -163,10 +238,12 @@ public class DefaultSiteRendererTest
             .read( new FileReader( getTestFile( "src/test/resources/site/site.xml" ) ) );
 
         SiteRenderingContext ctxt = getSiteRenderingContext( decoration, "src/test/resources/site", false );
-        renderer.render( renderer.locateDocumentFiles( ctxt ).values(), ctxt, getTestFile( OUTPUT ) );
+        ctxt.setRootDirectory( getTestFile( "" ) );
+        renderer.render( renderer.locateDocumentFiles( ctxt, true ).values(), ctxt, getTestFile( OUTPUT ) );
 
         ctxt = getSiteRenderingContext( decoration, "src/test/resources/site-validate", true );
-        renderer.render( renderer.locateDocumentFiles( ctxt ).values(), ctxt, getTestFile( OUTPUT ) );
+        ctxt.setRootDirectory( getTestFile( "" ) );
+        renderer.render( renderer.locateDocumentFiles( ctxt, true ).values(), ctxt, getTestFile( OUTPUT ) );
 
         // ----------------------------------------------------------------------
         // Verify specific pages
@@ -198,7 +275,8 @@ public class DefaultSiteRendererTest
         DocumentRenderer docRenderer = mock( DocumentRenderer.class );
         when( docRenderer.isExternalReport() ).thenReturn( true );
         when( docRenderer.getOutputName() ).thenReturn( "external/index" );
-        when( docRenderer.getRenderingContext() ).thenReturn( new RenderingContext( new File( "" ), "index.html" )  );
+        when( docRenderer.getRenderingContext() ).thenReturn( new RenderingContext( new File( "" ), "index.html",
+                                                                                    "generator:external" ) );
 
         SiteRenderingContext context = new SiteRenderingContext();
 
@@ -226,12 +304,15 @@ public class DefaultSiteRendererTest
         siteRenderingContext.setTemplateProperties( attributes );
 
         siteRenderingContext.setTemplateName( "org/apache/maven/doxia/siterenderer/velocity-toolmanager.vm" );
-        RenderingContext context = new RenderingContext( new File( "" ), "document.html" );
+        RenderingContext context = new RenderingContext( new File( "" ), "document.html", "generator" );
         SiteRendererSink sink = new SiteRendererSink( context );
-        renderer.generateDocument( writer, sink, siteRenderingContext );
+        renderer.mergeDocumentIntoSite( writer, sink, siteRenderingContext );
 
         String renderResult = writer.toString();
-        String expectedResult = IOUtils.toString( getClass().getResourceAsStream( "velocity-toolmanager.expected.txt" ) );
+        String expectedResult =
+            IOUtils.toString(
+                getClass().getResourceAsStream( "velocity-toolmanager.expected.txt" ),
+                StandardCharsets.UTF_8 );
         expectedResult = StringUtils.unifyLineSeparators( expectedResult );
         assertEquals( expectedResult, renderResult );
     }
@@ -254,13 +335,13 @@ public class DefaultSiteRendererTest
         SiteRenderingContext siteRenderingContext =
             renderer.createContextForTemplate( templateFile, attributes, new DecorationModel(),
                                                "defaultWindowTitle", Locale.ENGLISH );
-        RenderingContext context = new RenderingContext( new File( "" ), "document.html" );
+        RenderingContext context = new RenderingContext( new File( "" ), "document.html", "generator" );
         SiteRendererSink sink = new SiteRendererSink( context );
-        renderer.generateDocument( writer, sink, siteRenderingContext );
+        renderer.mergeDocumentIntoSite( writer, sink, siteRenderingContext );
 
         String renderResult = writer.toString();
-        String expectedResult = IOUtils.toString( getClass().getResourceAsStream( "velocity-toolmanager.expected.txt" ) );
-        expectedResult = StringUtils.unifyLineSeparators( expectedResult );
+        InputStream in = getClass().getResourceAsStream( "velocity-toolmanager.expected.txt" );
+        String expectedResult = StringUtils.unifyLineSeparators( IOUtils.toString( in, StandardCharsets.UTF_8 ) );
         assertEquals( expectedResult, renderResult );
     }
 
@@ -284,12 +365,14 @@ public class DefaultSiteRendererTest
         SiteRenderingContext siteRenderingContext =
             renderer.createContextForSkin( skin, attributes, new DecorationModel(), "defaultWindowTitle",
                                            Locale.ENGLISH );
-        RenderingContext context = new RenderingContext( new File( "" ), "document.html" );
+        RenderingContext context = new RenderingContext( new File( "" ), "document.html", "generator" );
         SiteRendererSink sink = new SiteRendererSink( context );
-        renderer.generateDocument( writer, sink, siteRenderingContext );
+        renderer.mergeDocumentIntoSite( writer, sink, siteRenderingContext );
         String renderResult = writer.toString();
-        String expectedResult = IOUtils.toString( getClass().getResourceAsStream( "velocity-toolmanager.expected.txt" ) );
-        expectedResult = StringUtils.unifyLineSeparators( expectedResult );
+        String expectedResult = StringUtils.unifyLineSeparators(
+            IOUtils.toString(
+                getClass().getResourceAsStream( "velocity-toolmanager.expected.txt" ),
+                StandardCharsets.UTF_8 ) );
         assertEquals( expectedResult, renderResult );
     }
 
@@ -511,10 +594,10 @@ public class DefaultSiteRendererTest
     public void validatePages()
         throws Exception
     {
-        new XhtmlValidatorTest().validateGeneratedPages();
+        new Xhtml5ValidatorTest().validateGeneratedPages();
     }
 
-    protected static class XhtmlValidatorTest
+    protected static class Xhtml5ValidatorTest
         extends AbstractXmlValidator
     {
         /**
@@ -525,6 +608,7 @@ public class DefaultSiteRendererTest
         public void validateGeneratedPages()
             throws Exception
         {
+            setValidate( false );
             setUp();
             testValidateFiles();
             tearDown();
@@ -544,7 +628,8 @@ public class DefaultSiteRendererTest
         /** {@inheritDoc} */
         protected EntityResolver getEntityResolver()
         {
-            return new XhtmlEntityResolver();
+            /* HTML5 restricts use of entities to XML only */
+            return null;
         }
 
         /** {@inheritDoc} */

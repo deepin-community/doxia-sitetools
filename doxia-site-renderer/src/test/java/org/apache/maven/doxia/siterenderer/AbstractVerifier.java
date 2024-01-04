@@ -30,7 +30,6 @@ import org.codehaus.plexus.PlexusTestCase;
  * Abstract base class for verifiers.
  *
  * @author ltheussl
- * @version $Id: AbstractVerifier.java 732140 2009-01-06 22:01:29Z ltheussl $
  */
 public abstract class AbstractVerifier
     extends PlexusTestCase
@@ -52,9 +51,11 @@ public abstract class AbstractVerifier
         assertTrue( file.exists() );
 
         // HtmlUnit
-        WebClient webClient = new WebClient();
-
-        return (HtmlPage) webClient.getPage( file.toURI().toURL() );
+        try ( WebClient webClient = new WebClient() ) {
+            webClient.getOptions().setCssEnabled( false );
+    
+            return (HtmlPage) webClient.getPage( file.toURI().toURL() );
+        }
     }
 
     /**
@@ -62,7 +63,7 @@ public abstract class AbstractVerifier
      *
      * @param file the file to verify.
      *
-     * @throws java.lang.Exception if something goes wrong;
+     * @throws java.lang.Exception if something goes wrong
      */
     public abstract void verify( String file )
             throws Exception;

@@ -111,7 +111,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.Os;
 import org.codehaus.plexus.util.PathTool;
-import org.codehaus.plexus.util.PropertyUtils;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
@@ -123,7 +122,6 @@ import org.codehaus.plexus.velocity.VelocityComponent;
  *
  * @author <a href="mailto:evenisse@codehaus.org">Emmanuel Venisse</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: DefaultSiteRenderer.java 1800812 2017-07-04 19:51:00Z michaelo $
  * @since 1.0
  */
 @Component( role = Renderer.class )
@@ -166,6 +164,14 @@ public class DefaultSiteRenderer
     public Map<String, DocumentRenderer> locateDocumentFiles( SiteRenderingContext siteRenderingContext )
             throws IOException, RendererException
     {
+        return locateDocumentFiles( siteRenderingContext, false );
+    }
+
+    /** {@inheritDoc} */
+    public Map<String, DocumentRenderer> locateDocumentFiles( SiteRenderingContext siteRenderingContext,
+                                                              boolean editable )
+        throws IOException, RendererException
+    {
         Map<String, DocumentRenderer> files = new LinkedHashMap<String, DocumentRenderer>();
         Map<String, String> moduleExcludes = siteRenderingContext.getModuleExcludes();
 
@@ -182,7 +188,8 @@ public class DefaultSiteRenderer
 
                     String excludes = ( moduleExcludes == null ) ? null : moduleExcludes.get( module.getParserId() );
 
-                    addModuleFiles( moduleBasedir, module, excludes, files );
+                    addModuleFiles( siteRenderingContext.getRootDirectory(), moduleBasedir, module, excludes, files,
+                                    editable );
                 }
             }
         }
@@ -196,7 +203,8 @@ public class DefaultSiteRenderer
 
                 String excludes = ( moduleExcludes == null ) ? null : moduleExcludes.get( module.getParserId() );
 
-                addModuleFiles( module.getBasedir(), parserModule, excludes, files );
+                addModuleFiles( siteRenderingContext.getRootDirectory(), module.getBasedir(), parserModule, excludes,
+                                files, editable );
             }
             catch ( ParserModuleNotFoundException e )
             {
@@ -222,14 +230,17 @@ public class DefaultSiteRenderer
         return filtered;
     }
 
-    private void addModuleFiles( File moduleBasedir, ParserModule module, String excludes,
-                                 Map<String, DocumentRenderer> files )
+    private void addModuleFiles( File rootDir, File moduleBasedir, ParserModule module, String excludes,
+                                 Map<String, DocumentRenderer> files, boolean editable )
             throws IOException, RendererException
     {
         if ( !moduleBasedir.exists() || ArrayUtils.isEmpty( module.getExtensions() ) )
         {
             return;
         }
+
+        String moduleRelativePath =
+            PathTool.getRelativeFilePath( rootDir.getAbsolutePath(), moduleBasedir.getAbsolutePath() );
 
         List<String> allFiles = FileUtils.getFileNames( moduleBasedir, "**/*.*", excludes, false );
 
@@ -246,8 +257,8 @@ public class DefaultSiteRenderer
 
             for ( String doc : docs )
             {
-                RenderingContext context =
-                        new RenderingContext( moduleBasedir, doc, module.getParserId(), extension );
+                RenderingContext context = new RenderingContext( moduleBasedir, moduleRelativePath, doc,
+                                                                 module.getParserId(), extension, editable );
 
                 // TODO: DOXIA-111: we need a general filter here that knows how to alter the context
                 if ( endsWithIgnoreCase( doc, ".vm" ) )
@@ -352,29 +363,29 @@ public class DefaultSiteRenderer
     }
 
     /** {@inheritDoc} */
-    public void renderDocument( Writer writer, RenderingContext renderingContext, SiteRenderingContext siteContext )
+    public void renderDocument( Writer writer, RenderingContext docRenderingContext, SiteRenderingContext siteContext )
             throws RendererException, FileNotFoundException, UnsupportedEncodingException
     {
-        SiteRendererSink sink = new SiteRendererSink( renderingContext );
+        SiteRendererSink sink = new SiteRendererSink( docRenderingContext );
 
-        File doc = new File( renderingContext.getBasedir(), renderingContext.getInputName() );
+        File doc = new File( docRenderingContext.getBasedir(), docRenderingContext.getInputName() );
 
         Reader reader = null;
         try
         {
             String resource = doc.getAbsolutePath();
 
-            Parser parser = doxia.getParser( renderingContext.getParserId() );
+            Parser parser = doxia.getParser( docRenderingContext.getParserId() );
             // DOXIASITETOOLS-146 don't render comments from source markup
             parser.setEmitComments( false );
 
             // TODO: DOXIA-111: the filter used here must be checked generally.
-            if ( renderingContext.getAttribute( "velocity" ) != null )
+            if ( docRenderingContext.getAttribute( "velocity" ) != null )
             {
-                getLogger().debug( "Processing Velocity for " + renderingContext.getInputName() );
+                getLogger().debug( "Processing Velocity for " + docRenderingContext.getDoxiaSourcePath() );
                 try
                 {
-                    Context vc = createDocumentVelocityContext( renderingContext, siteContext );
+                    Context vc = createDocumentVelocityContext( docRenderingContext, siteContext );
 
                     StringWriter sw = new StringWriter();
 
@@ -385,36 +396,15 @@ public class DefaultSiteRenderer
                     if ( siteContext.getProcessedContentOutput() != null )
                     {
                         // save Velocity processing result, ie the Doxia content that will be parsed after
-                        if ( !siteContext.getProcessedContentOutput().exists() )
-                        {
-                            siteContext.getProcessedContentOutput().mkdirs();
-                        }
-
-                        String input = renderingContext.getInputName();
-                        File outputFile = new File( siteContext.getProcessedContentOutput(),
-                                                    input.substring( 0, input.length() - 3 ) );
-
-                        File outputParent = outputFile.getParentFile();
-                        if ( !outputParent.exists() )
-                        {
-                            outputParent.mkdirs();
-                        }
-
-                        FileUtils.fileWrite( outputFile, siteContext.getInputEncoding(), doxiaContent );
+                        saveVelocityProcessedContent( docRenderingContext, siteContext, doxiaContent );
                     }
 
                     reader = new StringReader( doxiaContent );
                 }
-                catch ( Exception e )
+                catch ( VelocityException e )
                 {
-                    if ( getLogger().isDebugEnabled() )
-                    {
-                        getLogger().error( "Error parsing " + resource + " as a velocity template, using as text.", e );
-                    }
-                    else
-                    {
-                        getLogger().error( "Error parsing " + resource + " as a velocity template, using as text." );
-                    }
+                    throw new RendererException( "Error parsing " + docRenderingContext.getDoxiaSourcePath()
+                        + " as a Velocity template: " + e.getMessage(), e );
                 }
 
                 if ( parser.getType() == Parser.XML_TYPE && siteContext.isValidate() )
@@ -442,11 +432,7 @@ public class DefaultSiteRenderer
             }
             sink.enableLogging( new PlexusLoggerWrapper( getLogger() ) );
 
-            if ( reader == null ) // can happen if velocity throws above
-            {
-                throw new RendererException( "Error getting a parser for '" + doc + "'" );
-            }
-            doxia.parse( reader, renderingContext.getParserId(), sink );
+            doxia.parse( reader, docRenderingContext.getParserId(), sink );
         }
         catch ( ParserNotFoundException e )
         {
@@ -454,8 +440,14 @@ public class DefaultSiteRenderer
         }
         catch ( ParseException e )
         {
-            throw new RendererException( "Error parsing '"
-                    + doc + "': line [" + e.getLineNumber() + "] " + e.getMessage(), e );
+            StringBuilder errorMsgBuilder = new StringBuilder();
+            errorMsgBuilder.append( "Error parsing '" ).append( doc ).append( "': " );
+            if ( e.getLineNumber() > 0 )
+            {
+                errorMsgBuilder.append( "line [" ).append( e.getLineNumber() ).append( "] " );
+            }
+            errorMsgBuilder.append( e.getMessage() );
+            throw new RendererException( errorMsgBuilder.toString(), e );
         }
         catch ( IOException e )
         {
@@ -470,7 +462,29 @@ public class DefaultSiteRenderer
             IOUtil.close( reader );
         }
 
-        generateDocument( writer, sink, siteContext );
+        mergeDocumentIntoSite( writer, (DocumentContent) sink, siteContext );
+    }
+
+    private void saveVelocityProcessedContent( RenderingContext docRenderingContext, SiteRenderingContext siteContext,
+                                               String doxiaContent )
+        throws IOException
+    {
+        if ( !siteContext.getProcessedContentOutput().exists() )
+        {
+            siteContext.getProcessedContentOutput().mkdirs();
+        }
+
+        String input = docRenderingContext.getInputName();
+        File outputFile = new File( siteContext.getProcessedContentOutput(),
+                                    input.substring( 0, input.length() - 3 ) );
+
+        File outputParent = outputFile.getParentFile();
+        if ( !outputParent.exists() )
+        {
+            outputParent.mkdirs();
+        }
+
+        FileUtils.fileWrite( outputFile, siteContext.getInputEncoding(), doxiaContent );
     }
 
     /**
@@ -521,9 +535,9 @@ public class DefaultSiteRenderer
     /**
      * Create a Velocity Context for a Doxia document, containing every information about rendered document.
      *
-     * @param sink the site renderer sink for the document
+     * @param renderingContext the document's RenderingContext
      * @param siteRenderingContext the site rendering context
-     * @return
+     * @return a Velocity tools managed context
      */
     protected Context createDocumentVelocityContext( RenderingContext renderingContext,
                                                      SiteRenderingContext siteRenderingContext )
@@ -559,19 +573,23 @@ public class DefaultSiteRenderer
         // doxiaSiteRendererVersion
         InputStream inputStream = this.getClass().getResourceAsStream( "/META-INF/"
             + "maven/org.apache.maven.doxia/doxia-site-renderer/pom.properties" );
-        Properties properties = PropertyUtils.loadProperties( inputStream );
         if ( inputStream == null )
         {
             getLogger().debug( "pom.properties for doxia-site-renderer could not be found." );
         }
-        else if ( properties == null )
-        {
-            getLogger().debug( "Failed to load pom.properties, so doxiaVersion is not available"
-                + " in the Velocity context." );
-        }
         else
         {
-            context.put( "doxiaSiteRendererVersion", properties.getProperty( "version" ) );
+            Properties properties = new Properties();
+            try ( InputStream in = inputStream )
+            {
+                properties.load( in );
+                context.put( "doxiaSiteRendererVersion", properties.getProperty( "version" ) );
+            }
+            catch ( IOException e )
+            {
+                getLogger().debug( "Failed to load pom.properties, so doxiaVersion is not available"
+                        + " in the Velocity context." );
+            }
         }
 
         // Add user properties
@@ -605,22 +623,22 @@ public class DefaultSiteRenderer
      * Create a Velocity Context for the site template decorating the document. In addition to all the informations
      * from the document, this context contains data gathered in {@link SiteRendererSink} during document rendering.
      *
-     * @param siteRendererSink the site renderer sink for the document
+     * @param content the document content to be merged into the template
      * @param siteRenderingContext the site rendering context
-     * @return
+     * @return a Velocity tools managed context
      */
-    protected Context createSiteTemplateVelocityContext( SiteRendererSink siteRendererSink,
+    protected Context createSiteTemplateVelocityContext( DocumentContent content,
                                                          SiteRenderingContext siteRenderingContext )
     {
         // first get the context from document
-        Context context = createDocumentVelocityContext( siteRendererSink.getRenderingContext(), siteRenderingContext );
+        Context context = createDocumentVelocityContext( content.getRenderingContext(), siteRenderingContext );
 
         // then add data objects from rendered document
 
         // Add infos from document
-        context.put( "authors", siteRendererSink.getAuthors() );
+        context.put( "authors", content.getAuthors() );
 
-        context.put( "shortTitle", siteRendererSink.getTitle() );
+        context.put( "shortTitle", content.getTitle() );
 
         // DOXIASITETOOLS-70: Prepend the project name to the title, if any
         String title = "";
@@ -638,16 +656,16 @@ public class DefaultSiteRenderer
         {
             title += " &#x2013; "; // Symbol Name: En Dash, Html Entity: &ndash;
         }
-        title += siteRendererSink.getTitle();
+        title += content.getTitle();
 
         context.put( "title", title );
 
-        context.put( "headContent", siteRendererSink.getHead() );
+        context.put( "headContent", content.getHead() );
 
-        context.put( "bodyContent", siteRendererSink.getBody() );
+        context.put( "bodyContent", content.getBody() );
 
         // document date (got from Doxia Sink date() API)
-        String documentDate = siteRendererSink.getDate();
+        String documentDate = content.getDate();
         if ( StringUtils.isNotEmpty( documentDate ) )
         {
             context.put( "documentDate", documentDate );
@@ -667,10 +685,13 @@ public class DefaultSiteRenderer
             catch ( java.text.ParseException e )
             {
                 getLogger().warn( "Could not parse date '" + documentDate + "' from "
-                    + siteRendererSink.getRenderingContext().getInputName()
+                    + content.getRenderingContext().getInputName()
                     + " (expected yyyy-MM-dd format), ignoring!" );
             }
         }
+
+        // document rendering context, to get eventual inputName
+        context.put( "docRenderingContext", content.getRenderingContext() );
 
         return context;
     }
@@ -679,12 +700,20 @@ public class DefaultSiteRenderer
     public void generateDocument( Writer writer, SiteRendererSink sink, SiteRenderingContext siteRenderingContext )
             throws RendererException
     {
+        mergeDocumentIntoSite( writer, sink, siteRenderingContext );
+    }
+
+    /** {@inheritDoc} */
+    public void mergeDocumentIntoSite( Writer writer, DocumentContent content,
+                                           SiteRenderingContext siteRenderingContext )
+        throws RendererException
+    {
         String templateName = siteRenderingContext.getTemplateName();
 
         getLogger().debug( "Processing Velocity for template " + templateName + " on "
-            + sink.getRenderingContext().getInputName() );
+            + content.getRenderingContext().getInputName() );
 
-        Context context = createSiteTemplateVelocityContext( sink, siteRenderingContext );
+        Context context = createSiteTemplateVelocityContext( content, siteRenderingContext );
 
         ClassLoader old = null;
 

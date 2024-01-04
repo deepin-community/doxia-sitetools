@@ -47,7 +47,6 @@ import org.codehaus.plexus.util.WriterFactory;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: SiteToolTest.java 1736816 2016-03-27 21:29:15Z hboutemy $
  */
 public class SiteToolTest
     extends PlexusTestCase
@@ -156,12 +155,11 @@ public class SiteToolTest
 
         String to = "http://maven.apache.org/downloads.html";
         String from = "http://maven.apache.org/index.html";
-        // FIXME! assertEquals( "downloads.html", tool.getRelativePath( to, from ) );
 
         // MSITE-600, MSHARED-203
         to = "file:///tmp/bloop";
         from = "scp://localhost:/tmp/blop";
-        // FIXME! assertEquals( tool.getRelativePath( to, from ), to );
+        assertEquals( tool.getRelativePath( to, from ), to );
 
         // note: 'tmp' is the host here which is probably not the intention, but at least the result is correct
         to = "file://tmp/bloop";
@@ -260,7 +258,7 @@ public class SiteToolTest
         assertEquals( "http://maven.apache.org/images/maven-small.gif", model.getBannerRight().getSrc() );
         assertNull( model.getBannerRight().getHref() );
 
-        // model from repo: http://repo1.maven.org/maven2/org/apache/maven/maven-site/1.0/maven-site-1.0-site.xml
+        // model from repo: https://repo1.maven.org/maven2/org/apache/maven/maven-site/1.0/maven-site-1.0-site.xml
         // TODO Enable this test as soon as we haven a site.xml with head content as string
         /*project.setBasedir( null );
         project.setGroupId( "org.apache.maven" );

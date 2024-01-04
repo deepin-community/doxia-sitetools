@@ -1,3 +1,19 @@
+doxia-sitetools (1.11.1-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release
+    - Refreshed the patches
+    - Removed the RenderingContext backward compatibility fix
+    - Depend on libdoxia-java (>= 1.11)
+    - Depend on junit4 instead of junit
+    - Ignore the doxia-module-markdown module
+  * Explicit dependency on libeclipse-sisu-maven-plugin-java (Closes: #1026665)
+  * Removed the -java-doc package
+  * Standards-Version updated to 4.6.2
+  * No longer track the milestone releases
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Sat, 07 Jan 2023 10:53:04 +0100
+
 doxia-sitetools (1.7.5-2) unstable; urgency=medium
 
   * Team upload.

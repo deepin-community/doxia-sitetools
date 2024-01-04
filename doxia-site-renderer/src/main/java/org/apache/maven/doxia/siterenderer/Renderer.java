@@ -38,9 +38,8 @@ import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
  * (eventually packaged as skin).</p>
  *
  * @author <a href="mailto:evenisse@codehaus.org">Emmanuel Venisse</a>
- * @version $Id: Renderer.java 1767162 2016-10-30 14:48:28Z hboutemy $
  */
-public interface Renderer
+public interface Renderer // TODO rename to SiteRenderer
 {
     /**
      * Plexus lookup role.
@@ -61,25 +60,41 @@ public interface Renderer
         throws RendererException, IOException;
 
     /**
-     * Generate a document output from a Doxia SiteRenderer Sink.
+     * Generate a document output from a Doxia SiteRenderer Sink, i.e. merge the document content into
+     * the site template.
      *
      * @param writer the Writer to use.
-     * @param sink the Site Renderer Sink to receive the Doxia events.
+     * @param sink the Site Renderer Sink that received the Doxia events during document content rendering.
      * @param siteRenderingContext the SiteRenderingContext to use.
      * @throws RendererException if it bombs.
+     * @deprecated since 1.8, use mergeDocumentIntoSite
      */
     void generateDocument( Writer writer, SiteRendererSink sink, SiteRenderingContext siteRenderingContext )
         throws RendererException;
 
     /**
+     * Generate a document output integrated in a site from a document content,
+     * i.e. merge the document content into the site template.
+     *
+     * @param writer the Writer to use.
+     * @param content the document content to be merged.
+     * @param siteRenderingContext the SiteRenderingContext to use.
+     * @throws RendererException if it bombs.
+     * @since 1.8
+     */
+    void mergeDocumentIntoSite( Writer writer, DocumentContent content, SiteRenderingContext siteRenderingContext )
+        throws RendererException;
+
+    /**
      * Create a Site Rendering Context for a site using a skin.
      *
-     * @param skin
-     * @param attributes
-     * @param decoration
-     * @param defaultWindowTitle
-     * @param locale
+     * @param skin a skin
+     * @param attributes attributes to use
+     * @param decoration a decoration model
+     * @param defaultWindowTitle default window title
+     * @param locale locale to use
      * @return a SiteRenderingContext.
+     * @throws RendererException if it bombs.
      * @throws java.io.IOException if it bombs.
      * @since 1.7.3 was previously with skin as File instead of Artifact
      */
@@ -90,16 +105,16 @@ public interface Renderer
     /**
      * Create a Site Rendering Context for a site using a local template.
      *
-     * @param templateFile
-     * @param attributes
-     * @param decoration
-     * @param defaultWindowTitle
-     * @param locale
+     * @param templateFile template file
+     * @param attributes attributes to use
+     * @param decoration a decoration model
+     * @param defaultWindowTitle default window title
+     * @param locale locale to use
      * @return a SiteRenderingContext.
      * @throws MalformedURLException if it bombs.
      * @since 1.7, had an additional skinFile parameter before
      * @deprecated Deprecated without replacement, use skins only.
-     * @see #createContextForSkin(File, Map, DecorationModel, String, Locale)
+     * @see #createContextForSkin(Artifact, Map, DecorationModel, String, Locale)
      */
     @Deprecated
     SiteRenderingContext createContextForTemplate( File templateFile, Map<String, ?> attributes,
@@ -110,9 +125,9 @@ public interface Renderer
     /**
      * Copy resource files.
      *
-     * @param siteRenderingContext
-     * @param resourcesDirectory
-     * @param outputDirectory
+     * @param siteRenderingContext the SiteRenderingContext to use
+     * @param resourcesDirectory resources directory as file
+     * @param outputDirectory output directory as file
      * @throws IOException if it bombs.
      * @deprecated since 1.7, use copyResources without resourcesDirectory parameter
      */
@@ -122,8 +137,8 @@ public interface Renderer
     /**
      * Copy resource files from skin, template, and site resources.
      *
-     * @param siteRenderingContext
-     * @param outputDirectory
+     * @param siteRenderingContext the SiteRenderingContext to use.
+     * @param outputDirectory output directory as file
      * @throws IOException if it bombs.
      * @since 1.7
      */
@@ -133,12 +148,26 @@ public interface Renderer
     /**
      * Locate Doxia document source files in the site source context.
      *
-     * @param siteRenderingContext
+     * @param siteRenderingContext the SiteRenderingContext to use
      * @return the Doxia document renderers in a Map keyed by output file name.
      * @throws IOException if it bombs.
      * @throws RendererException if it bombs.
+     * @deprecated since 1.8, use locateDocumentFiles with editable parameter
      */
     Map<String, DocumentRenderer> locateDocumentFiles( SiteRenderingContext siteRenderingContext )
+        throws IOException, RendererException;
+
+    /**
+     * Locate Doxia document source files in the site source context.
+     *
+     * @param siteRenderingContext the SiteRenderingContext to use
+     * @param editable Doxia document renderer as editable? (should not set editable if generated Doxia source)
+     * @return the Doxia document renderers in a Map keyed by output file name.
+     * @throws IOException if it bombs.
+     * @throws RendererException if it bombs.
+     * @since 1.8
+     */
+    Map<String, DocumentRenderer> locateDocumentFiles( SiteRenderingContext siteRenderingContext, boolean editable )
         throws IOException, RendererException;
 
     /**
@@ -146,12 +175,12 @@ public interface Renderer
      * {@link DoxiaDocumentRenderer}.
      *
      * @param writer the writer to render the document to.
-     * @param renderingContext the document's rendering context, which is expected to have a non-null parser id.
+     * @param docRenderingContext the document's rendering context, which is expected to have a non-null parser id.
      * @param siteContext the site's rendering context
      * @throws RendererException if it bombs.
      * @throws FileNotFoundException if it bombs.
      * @throws UnsupportedEncodingException if it bombs.
      */
-    void renderDocument( Writer writer, RenderingContext renderingContext, SiteRenderingContext siteContext )
+    void renderDocument( Writer writer, RenderingContext docRenderingContext, SiteRenderingContext siteContext )
         throws RendererException, FileNotFoundException, UnsupportedEncodingException;
 }

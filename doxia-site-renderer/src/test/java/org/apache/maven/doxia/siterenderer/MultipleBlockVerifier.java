@@ -26,6 +26,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlHeading2;
 import com.gargoylesoftware.htmlunit.html.HtmlListItem;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlParagraph;
+import com.gargoylesoftware.htmlunit.html.HtmlSection;
 import com.gargoylesoftware.htmlunit.html.HtmlUnorderedList;
 
 import java.util.Iterator;
@@ -33,7 +34,6 @@ import java.util.Iterator;
 /**
  *
  * @author ltheussl
- * @version $Id: MultipleBlockVerifier.java 1737482 2016-04-02 09:56:25Z hboutemy $
  */
 public class MultipleBlockVerifier
     extends AbstractVerifier
@@ -56,9 +56,8 @@ public class MultipleBlockVerifier
         // Verify link
         // ----------------------------------------------------------------------
 
-        HtmlDivision div = (HtmlDivision) elementIterator.next();
-        assertNotNull( div );
-        assertEquals( "section", div.getAttribute( "class" ) );
+        HtmlSection section = (HtmlSection) elementIterator.next();
+        assertNotNull( section );
 
         HtmlHeading2 h2 = (HtmlHeading2) elementIterator.next();
         assertNotNull( h2 );

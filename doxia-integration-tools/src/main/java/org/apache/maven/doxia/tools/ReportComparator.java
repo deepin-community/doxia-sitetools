@@ -29,9 +29,8 @@ import org.apache.maven.reporting.MavenReport;
  * Sorts reports.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @version $Id: ReportComparator.java 1060702 2011-01-19 07:40:28Z ltheussl $
- * @todo move to reporting API?
- * @todo allow reports to define their order in some other way?
+ * TODO move to reporting API?
+ * TODO allow reports to define their order in some other way?
  */
 public class ReportComparator
     implements Comparator<MavenReport>

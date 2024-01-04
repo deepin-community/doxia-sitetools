@@ -26,9 +26,9 @@ import java.io.IOException;
  * Base renderer interface for the <code>document</code>
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: DocRenderer.java 1072376 2011-02-19 16:28:01Z hboutemy $
  * @deprecated Since 1.1, use {@link DocumentRenderer} instead.
  */
+@Deprecated
 public interface DocRenderer
 {
     /** Plexus lookup. */

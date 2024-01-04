@@ -1,6 +1,4 @@
-package org.apache.maven.doxia.docrenderer.itext;
-
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,17 +17,4 @@ package org.apache.maven.doxia.docrenderer.itext;
  * under the License.
  */
 
-import org.apache.maven.doxia.docrenderer.DocRenderer;
-
-/**
- * RTF renderer interface for the <code>iText</code> framework
- *
- * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @deprecated since 1.1, use an implementation of {@link org.apache.maven.doxia.docrenderer.DocumentRenderer}.
- */
-@SuppressWarnings( "checkstyle:interfaceistype" )
-public interface RtfRenderer
-    extends DocRenderer
-{
-    String ROLE = RtfRenderer.class.getName();
-}
+asfMavenTlpStdBuild()

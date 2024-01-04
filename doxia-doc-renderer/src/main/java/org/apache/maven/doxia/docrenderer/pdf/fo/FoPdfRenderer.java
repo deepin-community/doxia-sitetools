@@ -53,9 +53,9 @@ import org.xml.sax.SAXParseException;
  * PDF renderer that uses Doxia's FO module.
  *
  * @author ltheussl
- * @version $Id: FoPdfRenderer.java 1726406 2016-01-23 15:06:45Z hboutemy $
  * @since 1.1
  */
+@Deprecated
 @Component( role = PdfRenderer.class, hint = "fo" )
 public class FoPdfRenderer
     extends AbstractPdfRenderer
@@ -301,7 +301,7 @@ public class FoPdfRenderer
                 {
                     String doc = href + "." + extension;
                     File source = new File( moduleBasedir, doc );
-    
+
                     // Velocity file?
                     if ( !source.exists() )
                     {
@@ -315,12 +315,12 @@ public class FoPdfRenderer
                         }
                         source = new File( moduleBasedir, doc );
                     }
-    
+
                     if ( source.exists() )
                     {
                         sink.setDocumentName( doc );
                         sink.setDocumentTitle( tocItem.getName() );
-    
+
                         parse( source.getPath(), module.getParserId(), sink, context );
                     }
                 }

@@ -24,10 +24,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlLink;
 import com.gargoylesoftware.htmlunit.html.HtmlMeta;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlStyle;
 import com.gargoylesoftware.htmlunit.html.HtmlTitle;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,7 +33,6 @@ import java.util.List;
  * Verify correct rendering of <code>site/xdoc/head.xml</code>.
  *
  * @author ltheussl
- * @version $Id: HeadVerifier.java 1737482 2016-04-02 09:56:25Z hboutemy $
  */
 public class HeadVerifier
     extends AbstractVerifier
@@ -51,9 +48,9 @@ public class HeadVerifier
         HtmlElement html = page.getDocumentElement();
         assertNotNull( html );
 
-        List<String> tagNames = new ArrayList<String>( 2 );
-        tagNames.add( "head" );
-        List<HtmlElement> heads = html.getHtmlElementsByTagNames( tagNames );
+        assertEquals( "en", html.getAttribute( "lang" ) );
+
+        List<HtmlElement> heads = html.getElementsByTagName( "head" );
         assertEquals( 1, heads.size() );
         HtmlElement head = heads.get( 0 );
         assertNotNull( head );
@@ -65,25 +62,31 @@ public class HeadVerifier
         // ----------------------------------------------------------------------
 
         HtmlMeta meta = (HtmlMeta) elementIterator.next();
-        assertEquals( "Content-Type", meta.getAttribute( "http-equiv" ) );
-        assertEquals( "text/html; charset=UTF-8", meta.getAttribute( "content" ) );
+        assertEquals( "UTF-8", meta.getAttribute( "charset" ) );
 
-        HtmlTitle title = (HtmlTitle) elementIterator.next();
-        assertNotNull( title );
+        // Skip viewport
+        elementIterator.next();
 
-        HtmlStyle style = (HtmlStyle) elementIterator.next();
-        assertNotNull( style );
-
-        HtmlLink link = (HtmlLink) elementIterator.next();
-        assertNotNull( link );
+        meta = (HtmlMeta) elementIterator.next();
+        assertEquals( "Unexpected meta entry found generated resource " + file, "generator", meta.getAttribute( "name" ) );
+        String generator = meta.getAttribute("content");
+        assertEquals("Unexpected value found for generator meta entry in generated resource " + file, "Apache Maven Doxia Site Renderer", generator);
 
         meta = (HtmlMeta) elementIterator.next();
         assertEquals( "author", meta.getAttribute( "name" ) );
         assertEquals( "John Doe", meta.getAttribute( "content" ).trim() );
 
-        meta = (HtmlMeta) elementIterator.next();
-        assertEquals( "Content-Language", meta.getAttribute( "http-equiv" ) );
-        assertEquals( "en", meta.getAttribute( "content" ) );
+        HtmlTitle title = (HtmlTitle) elementIterator.next();
+        assertNotNull( title );
+
+        HtmlLink link = (HtmlLink) elementIterator.next();
+        assertNotNull( link );
+        link = (HtmlLink) elementIterator.next();
+        assertNotNull( link );
+        link = (HtmlLink) elementIterator.next();
+        assertNotNull( link );
+        link = (HtmlLink) elementIterator.next();
+        assertNotNull( link );
 
         meta = (HtmlMeta) elementIterator.next();
         assertEquals( "description", meta.getAttribute( "name" ) );

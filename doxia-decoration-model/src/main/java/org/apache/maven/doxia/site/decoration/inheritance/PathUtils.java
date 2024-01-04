@@ -30,7 +30,6 @@ import org.codehaus.plexus.util.PathTool;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author <a href="mailto:henning@apache.org">Henning P. Schmiedehausen</a>
  * @deprecated this only operates on deprecated classes, it is not used anymore.
- * @version $Id: PathUtils.java 1058083 2011-01-12 11:34:02Z ltheussl $
  */
 public abstract class PathUtils
 {

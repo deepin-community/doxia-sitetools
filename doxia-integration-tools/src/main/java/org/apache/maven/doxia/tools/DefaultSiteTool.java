@@ -81,7 +81,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
  * Default implementation of the site tool.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: DefaultSiteTool.java 1763022 2016-10-01 16:31:29Z hboutemy $
  */
 @Component( role = SiteTool.class )
 public class DefaultSiteTool
@@ -127,7 +126,6 @@ public class DefaultSiteTool
     // Public methods
     // ----------------------------------------------------------------------
 
-    /** {@inheritDoc} */
     public Artifact getSkinArtifactFromRepository( ArtifactRepository localRepository,
                                                    List<ArtifactRepository> remoteArtifactRepositories,
                                                    DecorationModel decoration )
@@ -175,7 +173,6 @@ public class DefaultSiteTool
         return artifact;
     }
 
-    /** {@inheritDoc} */
     public Artifact getDefaultSkinArtifact( ArtifactRepository localRepository,
                                             List<ArtifactRepository> remoteArtifactRepositories )
         throws SiteToolException
@@ -183,12 +180,27 @@ public class DefaultSiteTool
         return getSkinArtifactFromRepository( localRepository, remoteArtifactRepositories, new DecorationModel() );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * This method is not implemented according to the URI specification and has many weird
+     * corner cases where it doesn't do the right thing. Please consider using a better 
+     * implemented method from a different library such as org.apache.http.client.utils.URIUtils#resolve.
+     */
+    @Deprecated
     public String getRelativePath( String to, String from )
     {
         checkNotNull( "to", to );
         checkNotNull( "from", from );
-
+        
+        if ( to.contains( ":" ) && from.contains( ":" ) )
+        {
+            String toScheme = to.substring( 0, to.lastIndexOf( ':' ) );
+            String fromScheme = from.substring( 0, from.lastIndexOf( ':' ) );
+            if ( !toScheme.equals( fromScheme ) ) 
+            {
+                return to; 
+            }
+        }
+        
         URL toUrl = null;
         URL fromUrl = null;
 
@@ -208,6 +220,7 @@ public class DefaultSiteTool
             catch ( MalformedURLException e1 )
             {
                 getLogger().warn( "Unable to load a URL for '" + to + "': " + e.getMessage() );
+                return to;
             }
         }
 
@@ -224,6 +237,7 @@ public class DefaultSiteTool
             catch ( MalformedURLException e1 )
             {
                 getLogger().warn( "Unable to load a URL for '" + from + "': " + e.getMessage() );
+                return to;
             }
         }
 
@@ -1497,7 +1511,7 @@ public class DefaultSiteTool
         final Properties properties = new Properties();
         final String corePomProperties = "META-INF/maven/org.apache.maven/maven-core/pom.properties";
         final InputStream in = MavenProject.class.getClassLoader().getResourceAsStream( corePomProperties );
-       try
+        try
         {
             properties.load( in );
         }

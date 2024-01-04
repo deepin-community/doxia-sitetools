@@ -56,6 +56,7 @@ import org.apache.maven.doxia.parser.module.ParserModuleManager;
 import org.apache.maven.doxia.parser.ParseException;
 import org.apache.maven.doxia.parser.manager.ParserNotFoundException;
 import org.apache.xml.utils.DefaultErrorHandler;
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
@@ -75,7 +76,6 @@ import com.lowagie.text.ElementTags;
  * Abstract <code>document</code> render with the <code>iText</code> framework
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: AbstractITextRender.java 1726406 2016-01-23 15:06:45Z hboutemy $
  * @deprecated since 1.1, use an implementation of {@link org.apache.maven.doxia.docrenderer.DocumentRenderer}.
  */
 public abstract class AbstractITextRender
@@ -88,14 +88,10 @@ public abstract class AbstractITextRender
 
     private static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
 
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     protected ParserModuleManager parserModuleManager;
 
-    /**
-     * @plexus.requirement
-     */
+    @Requirement
     protected Doxia doxia;
 
     static
@@ -292,10 +288,10 @@ public abstract class AbstractITextRender
     }
 
     /**
-     * Generate an ouput file with the iText framework
+     * Generate an output file from the contents of an input with the iText framework
      *
-     * @param iTextFile
-     * @param iTextOutput
+     * @param iTextFile input file
+     * @param iTextOutput output file
      * @throws org.apache.maven.doxia.docrenderer.DocumentRendererException if any
      * @throws java.io.IOException if any
      */

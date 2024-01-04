@@ -30,7 +30,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id: DocumentRendererTest.java 1185508 2011-10-18 06:58:50Z ltheussl $
  * @since 1.1.1
  */
 public class DocumentRendererTest
@@ -87,7 +86,6 @@ public class DocumentRendererTest
         renderAggregatedImpl( "itext" );
     }
 
-    @SuppressWarnings ( "unchecked" )
     private void renderImpl( String implementation )
         throws Exception
     {
@@ -103,7 +101,6 @@ public class DocumentRendererTest
 
         docRenderer.render( siteDirectoryFile, outputDirectory, null );
 
-        @SuppressWarnings ( "unchecked" )
         List<String> files =
             FileUtils.getFileNames( new File( siteDirectoryFile, "apt" ), "**/*.apt",
                                     FileUtils.getDefaultExcludesAsString(), false );
